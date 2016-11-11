@@ -122,9 +122,7 @@ Resources:
             RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-pipeline'
             TemplatePath: 'Zip::infrastructure/pipeline.yaml'
-            ParameterOverrides:
-              ArtifactsBucketName: !Ref ArtifactsBucketName
-              GitHubOAuthToken: !Ref GitHubOAuthToken
+            ParameterOverrides: !Sub '{"ArtifactsBucketName": "${ArtifactsBucketName}", "GitHubOAuthToken": "${GitHubOAuthToken}"}'
           InputArtifacts:
           - Name: Zip
           RunOrder: 1
