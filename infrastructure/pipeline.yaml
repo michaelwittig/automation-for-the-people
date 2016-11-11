@@ -188,4 +188,36 @@ Resources:
           InputArtifacts:
           - Name: Zip
           RunOrder: 3
-
+      - Name: DeployEnvironmentProd
+        Actions:
+        - Name: DeployEnvironmentProdAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !Sub '${CloudFormationRole.Arn}'
+            StackName: 'aftp-prod'
+            OutputFileName: 'infrastructure/output-environment-prod.json'
+            TemplateConfiguration: 'Zip::infrastructure/environment-prod.input.json'
+            TemplatePath: 'Zip::infrastructure/environment.yaml'
+          InputArtifacts:
+          - Name: Zip
+          OutputArtifacts:
+          - Name: Prod
+          RunOrder: 1
+        - Name: DeployApplicationProdAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: ElasticBeanstalk
+            Version: 1
+          Configuration:
+            ApplicationName: 'automation-for-the-people'
+            EnvironmentName: 'automation-for-the-people-prod'
+          InputArtifacts:
+          - Name: Zip
+          RunOrder: 2
