@@ -11,6 +11,3 @@ Resources:
     Type: 'AWS::ElasticBeanstalk::Application'
     Properties:
       ApplicationName: 'automation-for-the-people'
-Outputs:
-  ApplicationName:
-    Value: !Ref ApplicationName

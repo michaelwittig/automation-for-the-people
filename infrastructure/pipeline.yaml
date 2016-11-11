@@ -89,13 +89,10 @@ Resources:
             Capabilities: CAPABILITY_IAM
             RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-application'
-            OutputFileName: 'infrastructure/output-application.json'
             TemplateConfiguration: 'Zip::infrastructure/application.input.json'
             TemplatePath: 'Zip::infrastructure/application.yaml'
           InputArtifacts:
           - Name: Zip
-          OutputArtifacts:
-          - Name: App
           RunOrder: 1
       - Name: DeployEnvironmentStage
         Actions:
@@ -114,8 +111,19 @@ Resources:
             TemplateConfiguration: 'Zip::infrastructure/environment-stage.input.json'
             TemplatePath: 'Zip::infrastructure/environment.yaml'
           InputArtifacts:
-          - Name: App
           - Name: Zip
           OutputArtifacts:
           - Name: Stage
+          RunOrder: 1
+        - Name: DeployApplicationStageAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: ElasticBeanstalk
+            Version: 1
+          Configuration:
+            ApplicationName: 'automation-for-the-people'
+            EnvironmentName: 'automation-for-the-people-stage'
+          InputArtifacts:
+          - Name: Zip
           RunOrder: 1

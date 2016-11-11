@@ -1,6 +1,5 @@
 {
   "Parameters": {
-    "ApplicationName": {"Fn::GetParam": ["App", "infrastructure/output-application.json", "ApplicationName"]},
     "Stage": "stage"
   }
 }

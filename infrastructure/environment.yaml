@@ -2,9 +2,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Environment'
 Parameters:
-  ApplicationName:
-    Type: String
-    Description: 'The name of the application that is associated with this environment'
   Stage:
     Type: String
     AllowedValues:
@@ -31,8 +28,8 @@ Resources:
   Environment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
-      ApplicationName: !Ref ApplicationName
-      EnvironmentName: !Sub '${ApplicationName}-${Stage}'
+      ApplicationName: 'automation-for-the-people'
+      EnvironmentName: !Sub 'automation-for-the-people-${Stage}'
       SolutionStackName: '64bit Amazon Linux 2016.03 v2.1.6 running PHP 7.0'
       OptionSettings:
       - Namespace: 'aws:autoscaling:launchconfiguration'
