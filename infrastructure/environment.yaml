@@ -4,7 +4,7 @@ Description: 'Environment'
 Parameters:
   VersionLabel:
     Type: String
-    Description: 'The version to associate with the environment. Use outputs from the application's stack.'
+    Description: 'The version to associate with the environment. Use outputs from the application stack.'
   Stage:
     Type: String
     AllowedValues:
@@ -41,4 +41,4 @@ Resources:
       VersionLabel: !Ref VersionLabel
 Outputs:
   EndpointURL:
-    Value: !Sub '${EndpointURL}'
+    Value: !Sub '${Environment.EndpointURL}'
