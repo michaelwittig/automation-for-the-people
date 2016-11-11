@@ -1,6 +1,6 @@
 {
   "Parameters": {
-    "VersionLabel": {"Fn::GetParam": ["App", "infrastructure/output-application.json", "VersionLabel"]},
+    "ApplicationName": {"Fn::GetParam": ["App", "infrastructure/output-application.json", "ApplicationName"]},
     "Stage": "stage"
   }
 }

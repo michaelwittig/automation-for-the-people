@@ -116,4 +116,6 @@ Resources:
           InputArtifacts:
           - Name: App
           - Name: Zip
+          OutputArtifacts:
+          - Name: Stage
           RunOrder: 1
