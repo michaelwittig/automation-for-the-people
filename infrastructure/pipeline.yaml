@@ -88,7 +88,7 @@ Resources:
           exports.handler = (event, context, cb) => {
             console.log(JSON.stringify(event));
             const job = event['CodePipeline.job'];
-            const s3 = new AWS.S3({accessKeyId: job.data.artifactCredentials.accessKeyId, secretAccessKey: job.data.artifactCredentials.secretAccessKey, sessionToken: job.data.artifactCredentials.sessionToken});
+            const s3 = new AWS.S3({region: 'eu-west-1', accessKeyId: job.data.artifactCredentials.accessKeyId, secretAccessKey: job.data.artifactCredentials.secretAccessKey, sessionToken: job.data.artifactCredentials.sessionToken});
             const artifact = job.data.inputArtifacts.find((artifact) => artifact.name === 'Zip');
             s3.getObject({
               Bucket: artifact.location.s3Location.bucketName,
