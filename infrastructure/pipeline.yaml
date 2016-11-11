@@ -22,6 +22,20 @@ Resources:
           - 'sts:AssumeRole'
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/AdministratorAccess'
+  CloudFormationRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'cloudformation.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/AdministratorAccess'
   DeployLambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -73,10 +87,11 @@ Resources:
           Configuration:
             ActionMode: CREATE_UPDATE
             Capabilities: CAPABILITY_IAM
+            RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-application'
             OutputFileName: 'output-application.json'
-            TemplateConfiguration: 'TemplateSource::infrastructure/application.input.json'
-            TemplatePath: 'TemplateSource::infrastructure/application.yaml'
+            TemplateConfiguration: 'Zip::infrastructure/application.input.json'
+            TemplatePath: 'Zip::infrastructure/application.yaml'
           InputArtifacts:
           - Name: Zip
           OutputArtifacts:
