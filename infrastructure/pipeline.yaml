@@ -76,12 +76,12 @@ Resources:
             }).promise()
               .then((res) => cb(null, {}))
               .catch(e) => cb(e));
-          ;}
-        Handler: 'index.handler'
-        MemorySize: 128
-        Role: !Sub '${SmokeTestLambdaRole.Arn}'
-        Runtime: 'nodejs4.3'
-        Timeout: 60
+          };
+      Handler: 'index.handler'
+      MemorySize: 128
+      Role: !Sub '${SmokeTestLambdaRole.Arn}'
+      Runtime: 'nodejs4.3'
+      Timeout: 60
   Pipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
