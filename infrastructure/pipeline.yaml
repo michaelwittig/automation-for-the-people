@@ -64,7 +64,7 @@ Resources:
     Type: 'AWS::Lambda::Function'
     Properties:
       Code:
-        ZipFile: !Sub |
+        ZipFile: |
           'use strict';
           const zlib = require('zlib');
           const AWS = require('aws-sdk');
