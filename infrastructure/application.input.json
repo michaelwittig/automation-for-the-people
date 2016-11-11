@@ -1,0 +1,6 @@
+{
+  "Parameters": {
+    "ArtifactsBucketName": {"Fn::GetArtifactAtt": ["Zip", "BucketName"]}
+    "ArtifactObjectKey": {"Fn::GetArtifactAtt": ["Zip", "ObjectKey"]}
+  }
+}

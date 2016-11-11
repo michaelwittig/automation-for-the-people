@@ -1,0 +1,84 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Pipeline'
+Parameters:
+  ArtifactsBucketName:
+    Type: String
+  GitHubOAuthToken:
+    Type: String
+    NoEcho: true
+Resources:
+  PipelineRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'codepipeline.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/AdministratorAccess'
+  DeployLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'lambda.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/AdministratorAccess'
+  Pipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucketName
+      Name: 'automation-for-the-people'
+      RestartExecutionOnUpdate: true
+      RoleArn: !Sub '${PipelineRole.Arn}'
+      Stages:
+      - Name: Source
+        Actions:
+        - Name: SourceAction
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Provider: GitHub
+            Version: 1
+          Configuration:
+            Owner: michaelwittig
+            Repo: 'automation-for-the-people'
+            Branch: master
+            OAuthToken: !Ref GitHubOAuthToken
+          OutputArtifacts:
+          - Name: Zip
+          RunOrder: 1
+      - Name: DeployApplication
+        Actions:
+        - Name: DeployApplicationAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM
+            StackName: 'aftp-application'
+            OutputFileName: 'output-application.json'
+            TemplateConfiguration: 'TemplateSource::infrastructure/application.input.json'
+            TemplatePath: 'TemplateSource::infrastructure/application.yaml'
+          InputArtifacts:
+          - Name: Zip
+          OutputArtifacts:
+          - Name: App
+          RunOrder: 1

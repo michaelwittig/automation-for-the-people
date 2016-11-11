@@ -1,0 +1,44 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Environment'
+Parameters:
+  VersionLabel:
+    Type: String
+    Description: 'The version to associate with the environment. Use outputs from the application's stack.'
+  Stage:
+    Type: String
+    AllowedValues:
+    - prod
+    - stage
+Resources:
+  Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2008-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'ec2.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier'
+  InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+      - !Ref Role
+  Environment:
+    Type: 'AWS::ElasticBeanstalk::Environment'
+    Properties:
+      ApplicationName: 'automation-for-the-people'
+      EnvironmentName: !Sub 'automation-for-the-people-${Stage}'
+      SolutionStackName: '64bit Amazon Linux 2016.03 v2.1.6 running PHP 7.0)'
+      OptionSettings:
+      - Namespace: 'aws:autoscaling:launchconfiguration'
+        OptionName: 'IamInstanceProfile'
+        Value: !Ref InstanceProfile
+      VersionLabel: !Ref VersionLabel
+Outputs:
+  EndpointURL:
+    Value: !Sub '${EndpointURL}'
