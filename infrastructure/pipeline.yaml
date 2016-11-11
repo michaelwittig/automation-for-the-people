@@ -66,16 +66,47 @@ Resources:
       Code:
         ZipFile: !Sub |
           'use strict';
+          const zlib = require('zlib');
           const AWS = require('aws-sdk');
           AWS.config.setPromisesDependency(null);
           const codepipeline = new AWS.CodePipeline();
+          function success(jobId, cb) {
+            codepipeline.putJobSuccessResult({
+              jobId: jobId
+            }, cb);
+          }
+          function failure(jobId, err, cb) {
+            codepipeline.putJobFailureResult({
+              failureDetails: {
+                message: `${err.message}: ${err.stack}`,
+                type: 'JobFailed',
+
+              },
+              jobId: jobId
+            }, cb);
+          }
           exports.handler = (event, context, cb) => {
             console.log(JSON.stringify(event));
-            codepipeline.putJobSuccessResult({
-              jobId: event['CodePipeline.job'].id
-            }).promise()
-              .then((res) => cb(null, {}))
-              .catch((e) => cb(e));
+            const job = event['CodePipeline.job'];
+            const s3 = new AWS.S3({accessKeyId: job.data.artifactCredentials.accessKeyId, secretAccessKey: job.data.artifactCredentials.secretAccessKey, sessionToken: job.data.artifactCredentials.sessionToken});
+            const artifact = job.data.inputArtifacts.find((artifact) => artifact.name === 'Zip');
+            s3.getObject({
+              Bucket: artifact.location.s3Location.bucketName,
+              Key: artifact.location.s3Location.objectKey
+            }, (err, res) => {
+              if (err) {
+                failure(job.id, err, cb);
+              } else {
+                zlib.unzip(res.Body, function(err, res) {
+                  if (err) {
+                    failure(job.id, err, cb);
+                  } else {
+                    console.log(res.toString('utf8'));
+                    success(job.id, cb);
+                  }
+                });
+              }
+            });
           };
       Handler: 'index.handler'
       MemorySize: 128
