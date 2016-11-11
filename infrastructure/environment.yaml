@@ -30,7 +30,7 @@ Resources:
     Properties:
       ApplicationName: 'automation-for-the-people'
       EnvironmentName: !Sub 'automation-for-the-people-${Stage}'
-      SolutionStackName: '64bit Amazon Linux 2016.03 v2.1.6 running PHP 7.0'
+      SolutionStackName: '64bit Amazon Linux 2016.03 v2.2.0 running PHP 7.0'
       OptionSettings:
       - Namespace: 'aws:autoscaling:launchconfiguration'
         OptionName: 'IamInstanceProfile'
