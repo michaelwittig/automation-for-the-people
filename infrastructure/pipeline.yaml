@@ -76,6 +76,23 @@ Resources:
           OutputArtifacts:
           - Name: Zip
           RunOrder: 1
+      - Name: DeployPipeline
+        Actions:
+        - Name: DeployPipelineAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !Sub '${CloudFormationRole.Arn}'
+            StackName: 'aftp-pipeline'
+            TemplatePath: 'Zip::infrastructure/pipeline.yaml'
+          InputArtifacts:
+          - Name: Zip
+          RunOrder: 1
       - Name: DeployApplication
         Actions:
         - Name: DeployApplicationAction
@@ -126,4 +143,4 @@ Resources:
             EnvironmentName: 'automation-for-the-people-stage'
           InputArtifacts:
           - Name: Zip
-          RunOrder: 1
+          RunOrder: 2
