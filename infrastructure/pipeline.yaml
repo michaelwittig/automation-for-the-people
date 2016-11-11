@@ -75,7 +75,7 @@ Resources:
               jobId: event['CodePipeline.job'].id
             }).promise()
               .then((res) => cb(null, {}))
-              .catch(e) => cb(e));
+              .catch((e) => cb(e));
           };
       Handler: 'index.handler'
       MemorySize: 128
@@ -108,24 +108,26 @@ Resources:
           OutputArtifacts:
           - Name: Zip
           RunOrder: 1
-# TODO Nice to have: this would only work if we can keep the existing parameters while updating?
-#      - Name: DeployPipeline
-#        Actions:
-#        - Name: DeployPipelineAction
-#          ActionTypeId:
-#            Category: Deploy
-#            Owner: AWS
-#            Provider: CloudFormation
-#            Version: 1
-#          Configuration:
-#            ActionMode: CREATE_UPDATE
-#            Capabilities: CAPABILITY_IAM
-#            RoleArn: !Sub '${CloudFormationRole.Arn}'
-#            StackName: 'aftp-pipeline'
-#            TemplatePath: 'Zip::infrastructure/pipeline.yaml'
-#          InputArtifacts:
-#          - Name: Zip
-#          RunOrder: 1
+      - Name: DeployPipeline
+        Actions:
+        - Name: DeployPipelineAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !Sub '${CloudFormationRole.Arn}'
+            StackName: 'aftp-pipeline'
+            TemplatePath: 'Zip::infrastructure/pipeline.yaml'
+            ParameterOverrides:
+              ArtifactsBucketName: !Ref ArtifactsBucketName
+              GitHubOAuthToken: !Ref GitHubOAuthToken
+          InputArtifacts:
+          - Name: Zip
+          RunOrder: 1
       - Name: DeployApplication
         Actions:
         - Name: DeployApplicationAction
