@@ -89,11 +89,31 @@ Resources:
             Capabilities: CAPABILITY_IAM
             RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-application'
-            OutputFileName: 'output-application.json'
+            OutputFileName: 'infrastructure/output-application.json'
             TemplateConfiguration: 'Zip::infrastructure/application.input.json'
             TemplatePath: 'Zip::infrastructure/application.yaml'
           InputArtifacts:
           - Name: Zip
           OutputArtifacts:
           - Name: App
+          RunOrder: 1
+      - Name: DeployEnvironmentStage
+        Actions:
+        - Name: DeployEnvironmentStageAction
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !Sub '${CloudFormationRole.Arn}'
+            StackName: 'aftp-stage'
+            OutputFileName: 'infrastructure/output-environment-stage.json'
+            TemplateConfiguration: 'Zip::infrastructure/environment-stage.input.json'
+            TemplatePath: 'Zip::infrastructure/environment.yaml'
+          InputArtifacts:
+          - Name: App
+          - Name: Zip
           RunOrder: 1
