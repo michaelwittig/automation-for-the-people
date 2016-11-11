@@ -36,7 +36,7 @@ Resources:
           - 'sts:AssumeRole'
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/AdministratorAccess'
-  DeployLambdaRole:
+  SmokeTestLambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -48,8 +48,40 @@ Resources:
             - 'lambda.amazonaws.com'
           Action:
           - 'sts:AssumeRole'
+      Policies:
+      - PolicyName: 'codepipeline'
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - codepipeline:PutJobSuccessResult
+            - codepipeline:PutJobFailureResult
+            Resource: '*'
       ManagedPolicyArns:
-      - 'arn:aws:iam::aws:policy/AdministratorAccess'
+      - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  SmokeTestLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: !Sub |
+          'use strict';
+          const AWS = require('aws-sdk');
+          AWS.config.setPromisesDependency(null);
+          const codepipeline = new AWS.CodePipeline();
+          exports.handler = (event, context, cb) => {
+            console.log(JSON.stringify(event));
+            codepipeline.putJobSuccessResult({
+              jobId: event['CodePipeline.job'].id
+            }).promise()
+              .then((res) => cb(null, {}))
+              .catch(e) => cb(e));
+          ;}
+        Handler: 'index.handler'
+        MemorySize: 128
+        Role: !Sub '${SmokeTestLambdaRole.Arn}'
+        Runtime: 'nodejs4.3'
+        Timeout: 60
   Pipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
@@ -76,23 +108,24 @@ Resources:
           OutputArtifacts:
           - Name: Zip
           RunOrder: 1
-      - Name: DeployPipeline
-        Actions:
-        - Name: DeployPipelineAction
-          ActionTypeId:
-            Category: Deploy
-            Owner: AWS
-            Provider: CloudFormation
-            Version: 1
-          Configuration:
-            ActionMode: CREATE_UPDATE
-            Capabilities: CAPABILITY_IAM
-            RoleArn: !Sub '${CloudFormationRole.Arn}'
-            StackName: 'aftp-pipeline'
-            TemplatePath: 'Zip::infrastructure/pipeline.yaml'
-          InputArtifacts:
-          - Name: Zip
-          RunOrder: 1
+# TODO Nice to have: this would only work if we can keep the existing parameters while updating?
+#      - Name: DeployPipeline
+#        Actions:
+#        - Name: DeployPipelineAction
+#          ActionTypeId:
+#            Category: Deploy
+#            Owner: AWS
+#            Provider: CloudFormation
+#            Version: 1
+#          Configuration:
+#            ActionMode: CREATE_UPDATE
+#            Capabilities: CAPABILITY_IAM
+#            RoleArn: !Sub '${CloudFormationRole.Arn}'
+#            StackName: 'aftp-pipeline'
+#            TemplatePath: 'Zip::infrastructure/pipeline.yaml'
+#          InputArtifacts:
+#          - Name: Zip
+#          RunOrder: 1
       - Name: DeployApplication
         Actions:
         - Name: DeployApplicationAction
@@ -144,3 +177,15 @@ Resources:
           InputArtifacts:
           - Name: Zip
           RunOrder: 2
+        - Name: RunSmokeTestStageAction
+          ActionTypeId:
+            Category: Invoke
+            Owner: AWS
+            Provider: Lambda
+            Version: 1
+          Configuration:
+            FunctionName: !Ref SmokeTestLambda
+          InputArtifacts:
+          - Name: Zip
+          RunOrder: 3
+
