@@ -138,7 +138,6 @@ Resources:
               .then((res) => save(res.Body, `/tmp/${tmp}.zip`))
               .then(() => cmd(`mkdir /tmp/${tmp}`))
               .then(() => cmd(`unzip /tmp/${tmp}.zip -d /tmp/${tmp}`))
-              .then(() => cmd(`ls -ls /tmp/${tmp}/infrastructure`))
               .then(() => smoke(require(`/tmp/${tmp}/infrastructure/output-environment-stage.json`)))
               .then(() => success(job.id))
               .catch((err) => failure(job.id, err))
