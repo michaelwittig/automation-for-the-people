@@ -245,7 +245,7 @@ Resources:
           Configuration:
             FunctionName: !Ref SmokeTestLambda
           InputArtifacts:
-          - Name: Zip
+          - Name: Stage
           RunOrder: 3
       - Name: DeployEnvironmentProd
         Actions:
