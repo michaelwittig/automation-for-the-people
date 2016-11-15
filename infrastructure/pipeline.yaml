@@ -66,47 +66,75 @@ Resources:
       Code:
         ZipFile: |
           'use strict';
-          const zlib = require('zlib');
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const exec = require('child_process').exec;
           const AWS = require('aws-sdk');
           AWS.config.setPromisesDependency(null);
           const codepipeline = new AWS.CodePipeline();
-          function success(jobId, cb) {
-            codepipeline.putJobSuccessResult({
+          function success(jobId) {
+            return codepipeline.putJobSuccessResult({
               jobId: jobId
-            }, cb);
+            }).promise();
           }
-          function failure(jobId, err, cb) {
-            codepipeline.putJobFailureResult({
+          function failure(jobId, err) {
+            return codepipeline.putJobFailureResult({
               failureDetails: {
                 message: `${err.message}: ${err.stack}`,
                 type: 'JobFailed',
 
               },
               jobId: jobId
-            }, cb);
+            }).promise();
+          }
+          function cmd(command, options) {
+            return new Promise(function(resolve, reject) {
+              exec(command, options, (err, stdout, stderr) => {
+                console.log(command);
+                console.log(`stderr: ${stderr.toString('utf8')}`);
+                console.log(`stdout: ${stdout.toString('utf8')}`);
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(null);
+                }
+              });
+            });
+          }
+          function save(buffer, file, options) {
+            return new Promise(function(resolve, reject) {
+              fs.writeFile(file, buffer, options, (err) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(null);
+                }
+              });
+            });
           }
           exports.handler = (event, context, cb) => {
             console.log(JSON.stringify(event));
             const job = event['CodePipeline.job'];
-            const s3 = new AWS.S3({region: 'eu-west-1', accessKeyId: job.data.artifactCredentials.accessKeyId, secretAccessKey: job.data.artifactCredentials.secretAccessKey, sessionToken: job.data.artifactCredentials.sessionToken});
-            const artifact = job.data.inputArtifacts.find((artifact) => artifact.name === 'Zip');
+            const artifact = job.data.inputArtifacts.find((artifact) => artifact.name === 'Stage');
+            const tmp = `artifact-${crypto.randomBytes(32).toString('hex')}`;
+            const s3 = new AWS.S3({signatureVersion: 'v4', region: 'eu-west-1', accessKeyId: job.data.artifactCredentials.accessKeyId, secretAccessKey: job.data.artifactCredentials.secretAccessKey, sessionToken: job.data.artifactCredentials.sessionToken});
             s3.getObject({
               Bucket: artifact.location.s3Location.bucketName,
               Key: artifact.location.s3Location.objectKey
-            }, (err, res) => {
-              if (err) {
-                failure(job.id, err, cb);
-              } else {
-                zlib.unzip(res.Body, function(err, res) {
-                  if (err) {
-                    failure(job.id, err, cb);
-                  } else {
-                    console.log(res.toString('utf8'));
-                    success(job.id, cb);
-                  }
-                });
-              }
-            });
+            }).promise()
+              .then((res) => save(res.Body, `/tmp/${tmp}.zip`))
+              .then(() => cmd(`mkdir /tmp/${tmp}`))
+              .then(() => cmd(`unzip /tmp/${tmp}.zip -d /tmp/${tmp}`))
+              .then(() => cmd('ls -ls /tmp'))
+              .then(() => cmd(`ls -ls /tmp/${tmp}`))
+              // TODO do something with the file
+              .then(() => cmd(`rm -rf /tmp/${tmp}.zip`))
+              .then(() => cmd(`rm -rf /tmp/${tmp}`))
+              .then(() => success(job.id))
+              .then(() => cb())
+              .catch((err) => failure(job.id, err))
+              .then(() => cb())
+              .catch((err) => cb(err));
           };
       Handler: 'index.handler'
       MemorySize: 128
