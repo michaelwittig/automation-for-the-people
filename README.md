@@ -22,3 +22,14 @@ This will setup a CodePipeline to:
 * run infrastructure tests against the staging environment
 * create/update a production ElasticBeanstalk environment
 * deploy a new application version to the production environment
+
+## Cleanup
+
+To delete all AWS resources, remove the CloudFormation stacks in the following order:
+
+* aftp-prod
+* aftp-stage
+* aftp-application
+* aftp-pipeline
+
+After that, remove the S3 bucket you crated when calling `init.sh`.
