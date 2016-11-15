@@ -68,6 +68,7 @@ Resources:
           'use strict';
           const crypto = require('crypto');
           const fs = require('fs');
+          const http = require('http');
           const exec = require('child_process').exec;
           const AWS = require('aws-sdk');
           AWS.config.setPromisesDependency(null);
@@ -81,8 +82,7 @@ Resources:
             return codepipeline.putJobFailureResult({
               failureDetails: {
                 message: `${err.message}: ${err.stack}`,
-                type: 'JobFailed',
-
+                type: 'JobFailed'
               },
               jobId: jobId
             }).promise();
@@ -112,6 +112,19 @@ Resources:
               });
             });
           }
+          function smoke(config) {
+            console.log(JSON.stringify(config));
+            return new Promise(function(resolve, reject) {
+              http.get(`http://${config.EndpointURL}`, (res) => {
+                const statusCode = res.statusCode;
+                if (res.statusCode === 200) {
+                  resolve();
+                } else {
+                  reject(new Error(`received unexpected status code: ${res.statusCode}`))
+                }
+              }).on('error', (err) => reject(err));
+            });
+          }
           exports.handler = (event, context, cb) => {
             console.log(JSON.stringify(event));
             const job = event['CodePipeline.job'];
@@ -125,14 +138,12 @@ Resources:
               .then((res) => save(res.Body, `/tmp/${tmp}.zip`))
               .then(() => cmd(`mkdir /tmp/${tmp}`))
               .then(() => cmd(`unzip /tmp/${tmp}.zip -d /tmp/${tmp}`))
-              .then(() => cmd('ls -ls /tmp'))
-              .then(() => cmd(`ls -ls /tmp/${tmp}`))
-              // TODO do something with the file
+              .then(() => cmd(`ls -ls /tmp/${tmp}/infrastructure`))
+              .then(() => smoke(require(`/tmp/${tmp}/infrastructure/output-environment-stage.json`)))
+              .then(() => success(job.id))
+              .catch((err) => failure(job.id, err))
               .then(() => cmd(`rm -rf /tmp/${tmp}.zip`))
               .then(() => cmd(`rm -rf /tmp/${tmp}`))
-              .then(() => success(job.id))
-              .then(() => cb())
-              .catch((err) => failure(job.id, err))
               .then(() => cb())
               .catch((err) => cb(err));
           };
