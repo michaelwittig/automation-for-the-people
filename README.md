@@ -2,7 +2,7 @@
 
 ## Setup
 
-You will need a personal GitHub access token. Generate one here: https://github.com/settings/tokens (only needs public_repo access)
+You will need a personal GitHub access token. Generate one here: https://github.com/settings/tokens (scopes needed: admin:repo_hook, repo)
 
 ```
 git clone git@github.com:michaelwittig/automation-for-the-people.git
