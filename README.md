@@ -6,6 +6,7 @@ You will need a personal GitHub access token. Generate one here: https://github.
 
 ```
 git clone git@github.com:michaelwittig/automation-for-the-people.git
+cd automation-for-the-people/
 cd infrastructure/
 ./init.sh
 ```
@@ -31,5 +32,3 @@ To delete all AWS resources, remove the CloudFormation stacks in the following o
 * aftp-stage
 * aftp-application
 * aftp-pipeline
-
-After that, remove the S3 bucket you crated when calling `init.sh`.

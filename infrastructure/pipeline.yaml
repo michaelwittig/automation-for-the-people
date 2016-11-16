@@ -2,12 +2,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Pipeline'
 Parameters:
-  ArtifactsBucketName:
-    Type: String
   GitHubOAuthToken:
     Type: String
     NoEcho: true
 Resources:
+  ArtifactsBucket:
+    DeletionPolicy: Retain
+    Type: 'AWS::S3::Bucket'
   PipelineRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -156,7 +157,7 @@ Resources:
     Properties:
       ArtifactStore:
         Type: S3
-        Location: !Ref ArtifactsBucketName
+        Location: !Ref ArtifactsBucket
       Name: 'automation-for-the-people'
       RestartExecutionOnUpdate: true
       RoleArn: !Sub '${PipelineRole.Arn}'
@@ -191,7 +192,7 @@ Resources:
             RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-pipeline'
             TemplatePath: 'Zip::infrastructure/pipeline.yaml'
-            ParameterOverrides: !Sub '{"ArtifactsBucketName": "${ArtifactsBucketName}", "GitHubOAuthToken": "${GitHubOAuthToken}"}'
+            ParameterOverrides: !Sub '{"GitHubOAuthToken": "${GitHubOAuthToken}"}'
           InputArtifacts:
           - Name: Zip
           RunOrder: 1
