@@ -28,7 +28,6 @@ This will setup a CodePipeline to:
 
 To delete all AWS resources, remove the CloudFormation stacks in the following order:
 
-* aftp-prod
-* aftp-stage
-* aftp-application
-* aftp-pipeline
+1. aftp-prod & aftp-stage
+2. aftp-application
+3. aftp-pipeline
