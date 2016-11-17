@@ -9,9 +9,11 @@ Parameters:
     NoEcho: true
 Resources:
   ArtifactsBucket:
+    DependsOn: CloudFormationRole
     DeletionPolicy: Retain
     Type: 'AWS::S3::Bucket'
   PipelineRole:
+    DependsOn: CloudFormationRole
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -40,6 +42,7 @@ Resources:
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/AdministratorAccess'
   SmokeTestLambdaRole:
+    DependsOn: CloudFormationRole
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -64,6 +67,7 @@ Resources:
       ManagedPolicyArns:
       - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   SmokeTestLambda:
+    DependsOn: CloudFormationRole
     Type: 'AWS::Lambda::Function'
     Properties:
       Code:
