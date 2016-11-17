@@ -2,20 +2,18 @@
 
 ## Setup
 
-You will need a personal GitHub access token. Generate one here: https://github.com/settings/tokens (scopes needed: admin:repo_hook, repo)
-
-```
-git clone git@github.com:michaelwittig/automation-for-the-people.git
-cd automation-for-the-people/
-cd infrastructure/
-./init.sh
-```
+1. fork the project on GitHub: https://github.com/michaelwittig/automation-for-the-people
+2. create a personal GitHub access token. Generate one here: https://github.com/settings/tokens (scopes needed: admin:repo_hook, repo)
+3. clone the project: `git clone git@github.com:YOUR_USERNAME/automation-for-the-people.git`
+4. cd into the cloned directory: `cd automation-for-the-people/`
+5. cd into the infrastructure directory: `cd infrastructure/`
+6. run: `./init.sh`
 
 ## How it works
 
 This will setup a CodePipeline to:
 
-* connect to the GitHub repository https://github.com/michaelwittig/automation-for-the-people
+* connect to the forked GitHub repository
 * update itself
 * create/update a ElasticBeanstalk application
 * create/update a staging ElasticBeanstalk environment

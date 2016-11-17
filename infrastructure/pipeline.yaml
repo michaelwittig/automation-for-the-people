@@ -2,6 +2,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Pipeline'
 Parameters:
+  GitHubUserName:
+    Type: String
   GitHubOAuthToken:
     Type: String
     NoEcho: true
@@ -171,7 +173,7 @@ Resources:
             Provider: GitHub
             Version: 1
           Configuration:
-            Owner: michaelwittig
+            Owner: !Ref GitHubUserName
             Repo: 'automation-for-the-people'
             Branch: master
             OAuthToken: !Ref GitHubOAuthToken
@@ -192,7 +194,7 @@ Resources:
             RoleArn: !Sub '${CloudFormationRole.Arn}'
             StackName: 'aftp-pipeline'
             TemplatePath: 'Zip::infrastructure/pipeline.yaml'
-            ParameterOverrides: !Sub '{"GitHubOAuthToken": "${GitHubOAuthToken}"}'
+            ParameterOverrides: !Sub '{"GitHubUserName": "${GitHubUserName}", "GitHubOAuthToken": "${GitHubOAuthToken}"}'
           InputArtifacts:
           - Name: Zip
           RunOrder: 1
