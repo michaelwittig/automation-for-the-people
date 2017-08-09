@@ -156,7 +156,7 @@ Resources:
       Handler: 'index.handler'
       MemorySize: 128
       Role: !Sub '${SmokeTestLambdaRole.Arn}'
-      Runtime: 'nodejs4.3'
+      Runtime: 'nodejs6.10'
       Timeout: 60
   Pipeline:
     Type: 'AWS::CodePipeline::Pipeline'
